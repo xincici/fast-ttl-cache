@@ -1,0 +1,9 @@
+{
+  "name": "fast-ttl-cache",
+  "version": "0.0.1",
+  "description": "ttl cache with capacity support use no timer",
+  "type": "module",
+  "module": "index.mjs",
+  "author": "linye<llxy8687@foxmail.com>",
+  "license": "MIT"
+}
