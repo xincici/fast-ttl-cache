@@ -1,12 +1,16 @@
 {
   "name": "fast-ttl-cache",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "ttl cache with capacity support use no timer",
   "module": "./index.mjs",
   "exports": {
     ".": {
       "import": "./index.mjs"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xincici/fast-ttl-cache"
   },
   "author": "linye<llxy8687@foxmail.com>",
   "license": "MIT"
