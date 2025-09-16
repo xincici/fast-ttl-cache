@@ -37,20 +37,20 @@ cache.size; // return 0
 ## API
 ```FastTTLCache(options) consturctor```
 
-options.ttl: number of millseconds, defaults to Infinity
-options.capacity: number of max capacity, defaults to Infinity
+- ```options.ttl```: number of millseconds, defaults to Infinity
+- ```options.capacity```: number of max capacity, defaults to Infinity
 
 ```FastTTLCache.prototype.put(key, value)```
 
-Add or update the value into cache with key and timestamp.
+- Add or update the value into cache with key and timestamp.
 
 ```FastTTLCache.prototype.get(key)```
 
-Get the value of the key from cache, return null if the key is not exists or has been expired.
+- Get the value of the key from cache, return null if the key is not exists or has been expired.
 
 ```FastTTLCache.prototype.size```
 
-return the current size of cache.
+- return the current size of cache.
 
 ## License
 MIT
