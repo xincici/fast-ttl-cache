@@ -43,7 +43,7 @@ export default class TTLCache {
     if (!item) return null;
     // 检查缓存是否过期，过期则删除
     if (Date.now() - item.time > this.ttl) {
-      this.removeItem(key);
+      this.del(key);
       return null;
     }
     return item.value;
@@ -95,7 +95,7 @@ export default class TTLCache {
 
     // 超出容量时，删除最久未更新的节点（头部节点）
     if (this.size > this.capacity) {
-      this.removeItem(this.head);
+      this.del(this.head);
     }
   }
 
@@ -103,8 +103,8 @@ export default class TTLCache {
    * 移除节点
    * @param key
    */
-  removeItem(key) {
-    if (!this.store.has(key)) return;
+  del(key) {
+    if (!this.store.has(key)) return false;
     // 获取当前节点
     const curItem = this.store.get(key);
     if (this.size === 1) { // 只有一个节点的情况
@@ -121,6 +121,7 @@ export default class TTLCache {
     }
     // 从 store 里删除节点
     this.store.delete(key);
+    return true;
   }
   /**
    * 将节点移动到队尾，队尾的节点一定是最后一个更新的
@@ -134,7 +135,7 @@ export default class TTLCache {
     // 获取当前节点
     const curItem = this.store.get(key);
     // 先移除节点
-    this.removeItem(key);
+    this.del(key);
 
     // 获取队尾节点
     const curTail = this.store.get(this.tail);
