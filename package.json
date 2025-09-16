@@ -1,17 +1,30 @@
 {
   "name": "fast-ttl-cache",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "ttl cache with capacity support use no timer",
-  "module": "./index.mjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "exports": {
     ".": {
-      "import": "./index.mjs"
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
     }
+  },
+  "scripts": {
+    "build": "tsup src/ --format cjs,esm",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/xincici/fast-ttl-cache"
   },
   "author": "linye<llxy8687@foxmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  },
+  "files": [
+    "dist/"
+  ]
 }

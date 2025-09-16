@@ -10,11 +10,26 @@ export default class TTLCache {
     this.store = new Map();
     this.head = this.tail = null;
     this.size = 0;
-    Object.defineProperty(this, 'size', {
-      get() {
-        return this.store.size;
+    Object.defineProperties(this, {
+      size: {
+        get() {
+          return this.store.size;
+        },
+        configurable: false,
       },
-      configurable: false
+      store: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+      },
+      head: {
+        configurable: false,
+        enumerable: false,
+      },
+      tail: {
+        configurable: false,
+        enumerable: false,
+      },
     });
   }
 

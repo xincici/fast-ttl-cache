@@ -1,5 +1,5 @@
 
-import TTLCache from './index.mjs';
+import TTLCache from './dist/index.mjs';
 
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
