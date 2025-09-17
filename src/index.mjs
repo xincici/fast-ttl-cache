@@ -1,5 +1,5 @@
 
-export default class TTLCache {
+export default class FastTTLCache {
   /**
    * 构造函数
    * @param options 配置选项，包含ttl(过期时间)和capacity(容量)
@@ -43,7 +43,7 @@ export default class TTLCache {
     if (!item) return null;
     // 检查缓存是否过期，过期则删除
     if (Date.now() - item.time > this.ttl) {
-      this.del(key);
+      this.del(item);
       return null;
     }
     return item.value;
@@ -57,41 +57,41 @@ export default class TTLCache {
   put(key, value) {
     // 缓存为空时的处理
     if (this.size === 0) {
-      this.store.set(key, {
+      const item = {
         key,
         value,
-        pre: null,
+        prev: null,
         next: null,
         time: Date.now(),
-      });
-      this.head = this.tail = key;
+      };
+      this.head = this.tail = item;
+      this.store.set(key, item);
       return;
     }
 
     // 数据已存在时的处理
     if (this.store.has(key)) {
       // 更新节点的值和时间戳
-      const curItem = this.store.get(key);
-      curItem.value = value;
-      curItem.time = Date.now();
+      const item = this.store.get(key);
+      item.value = value;
+      item.time = Date.now();
 
       // 移动到尾部
-      this.moveToTail(key);
+      this.moveToTail(item);
       return;
     }
 
     // 新数据插入尾部
-    const curTail = this.store.get(this.tail);
-    const newItem = {
+    const item = {
       key,
       value,
-      pre: curTail,
+      prev: this.tail,
       next: null,
       time: Date.now(),
     };
-    curTail.next = newItem;
-    this.store.set(key, newItem);
-    this.tail = key;
+    this.tail.next = item;
+    this.tail = item;
+    this.store.set(key, item);
 
     // 超出容量时，删除最久未更新的节点（头部节点）
     if (this.size > this.capacity) {
@@ -101,23 +101,23 @@ export default class TTLCache {
 
   /**
    * 移除节点
-   * @param key
+   * @param item
    */
-  del(key) {
+  del(item) {
+    const key = item.key;
     if (!this.store.has(key)) return false;
     // 获取当前节点
-    const curItem = this.store.get(key);
     if (this.size === 1) { // 只有一个节点的情况
       this.head = this.tail = null;
-    } else if (this.head === key) { // 处理头部节点的情况
-      this.head = curItem.next.key;
-      curItem.next.pre = null;
-    } else if (this.tail === key) { // 处理尾部节点的情况
-      this.tail = curItem.pre.key;
-      curItem.pre.next = null;
+    } else if (this.head === item) { // 处理头部节点的情况
+      this.head = item.next;
+      this.head.prev = null;
+    } else if (this.tail === item) { // 处理尾部节点的情况
+      this.tail = item.prev;
+      this.tail.next = null;
     } else { // 处理中间节点的情况
-      curItem.pre.next = curItem.next;
-      curItem.next.pre = curItem.pre;
+      item.prev.next = item.next;
+      item.next.prev = item.prev;
     }
     // 从 store 里删除节点
     this.store.delete(key);
@@ -125,28 +125,24 @@ export default class TTLCache {
   }
   /**
    * 将节点移动到队尾，队尾的节点一定是最后一个更新的
-   * @param key
+   * @param item
    */
-  moveToTail(key) {
+  moveToTail(item) {
+    const key = item.key;
     if (!this.store.has(key)) return;
     // 当前已经是尾部节点了
-    if (this.tail === key) return;
+    if (this.tail === item) return;
 
-    // 获取当前节点
-    const curItem = this.store.get(key);
     // 先移除节点
-    this.del(key);
-
-    // 获取队尾节点
-    const curTail = this.store.get(this.tail);
+    this.del(item);
 
     // 将节点移动到队尾
-    curTail.next = curItem;
-    curItem.pre = curTail;
-    curItem.next = null;
-    this.tail = key;
+    this.tail.next = item;
+    item.prev = this.tail;
+    item.next = null;
+    this.tail = item;
     // 设置缓存
-    this.store.set(key, curItem);
+    this.store.set(key, item);
   }
 };
 

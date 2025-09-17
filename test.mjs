@@ -1,36 +1,37 @@
 
-import TTLCache from './dist/index.mjs';
+import FastTTLCache from './src/index.mjs';
 
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-const c = new TTLCache({
+const ftc = new FastTTLCache({
   ttl: 1000,
-  capacity: 3,
+  capacity: 5,
 });
 
-c.put('a', 'aaaa');
-c.put('a', 'aaaaaa');
+ftc.put('a', 'aaaa');
+ftc.put('a', 'aaaaaa');
 
 await sleep(200);
-c.put('b', 'bbbb');
+ftc.put('b', 'bbbb');
 
 await sleep(500);
-c.put('c', 'cccc');
+ftc.put('c', 'cccc');
 
 await sleep(500);
-c.put('b', 'bbbbbb');
+ftc.put('b', 'bbbbbb');
 
 await sleep(600);
-c.put('d', 'dddd');
+ftc.put('d', 'dddd');
 
-console.log('b', c.get('b'));
+console.log('b', ftc.get('b'));
 
 await sleep(600);
-c.put('e', 'eeee');
+ftc.put('e', 'eeee');
 
-console.log(c);
-console.log(c.store.keys());
-console.log('b', c.get('b'));
-console.log('c', c.get('c'));
-console.log('a', c.get('a'));
-console.log('e', c.get('e'));
+console.log(ftc);
+console.log(ftc.store.keys());
+console.log('b', ftc.get('b'));
+console.log('c', ftc.get('c'));
+console.log('a', ftc.get('a'));
+console.log('e', ftc.get('e'));
+console.log(ftc.store.keys());
