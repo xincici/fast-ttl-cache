@@ -48,10 +48,6 @@ cache.size; // return 0
 
 - Get the value of the key from cache, return null if the key is not exists or has been expired.
 
-```FastTTLCache.prototype.del(key)```
-
-- delete key and it's value from cache, return false if the key is not exists, otherwise return true.
-
 ```FastTTLCache.prototype.size```
 
 - return the current size of cache, note because of the lazy deletion mechanism, it's not the exact number of cache items that are valid.
