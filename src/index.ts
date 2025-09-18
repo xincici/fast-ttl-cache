@@ -1,15 +1,34 @@
 
+import {
+  CacheItem,
+  CacheOptions,
+} from './types.js';
+
+/**
+ * FastTTLCache 缓存类
+ * @brief 不使用 timer 实现的支持 ttl 和 capacity 的缓存类，惰性删除
+ */
 export default class FastTTLCache {
+  /** 缓存过期时间(毫秒) */
+  public ttl: number;
+  /** 缓存最大容量 */
+  public capacity: number;
+  /** 存储缓存项的Map */
+  private store: Map<string, CacheItem> = new Map();
+  /** 链表头部指针，指向最久未更新的节点 */
+  public head: CacheItem | null = null;
+  /** 链表尾部指针，指向最新更新的节点 */
+  public tail: CacheItem | null = null;
+  /** 缓存大小 */
+  public size: number = 0;
+
   /**
    * 构造函数
    * @param options 配置选项，包含ttl(过期时间)和capacity(容量)
    */
-  constructor(options = {}) {
+  constructor (options: CacheOptions = {}) {
     this.ttl = options.ttl || Infinity;
     this.capacity = options.capacity || Infinity;
-    this.store = new Map();
-    this.head = this.tail = null;
-    this.size = 0;
     Object.defineProperties(this, {
       size: {
         get() {
@@ -38,7 +57,7 @@ export default class FastTTLCache {
    * @param key 缓存键
    * @returns 如果缓存存在且未过期返回值，否则返回null
    */
-  get(key) {
+  getToken (key: string): any | null {
     const item = this.store.get(key);
     if (!item) return null;
     // 检查缓存是否过期，过期则删除
@@ -54,7 +73,7 @@ export default class FastTTLCache {
    * @param key 缓存键
    * @param value 缓存值
    */
-  put(key, value) {
+  put (key: string, value: any): void {
     // 缓存为空时的处理
     if (this.size === 0) {
       const item = {
@@ -101,9 +120,9 @@ export default class FastTTLCache {
 
   /**
    * 移除节点
-   * @param item
+   * @param item CacheItem
    */
-  del(item) {
+  private del (item: CacheItem): boolean {
     const key = item.key;
     if (!this.store.has(key)) return false;
     // 获取当前节点
@@ -123,11 +142,12 @@ export default class FastTTLCache {
     this.store.delete(key);
     return true;
   }
+
   /**
    * 将节点移动到队尾，队尾的节点一定是最后一个更新的
-   * @param item
+   * @param item CacheItem
    */
-  moveToTail(item) {
+  private moveToTail (item: CacheItem): void {
     const key = item.key;
     if (!this.store.has(key)) return;
     // 当前已经是尾部节点了
@@ -137,12 +157,11 @@ export default class FastTTLCache {
     this.del(item);
 
     // 将节点移动到队尾
-    this.tail.next = item;
     item.prev = this.tail;
     item.next = null;
+    this.tail.next = item;
     this.tail = item;
     // 设置缓存
     this.store.set(key, item);
   }
-};
-
+}
