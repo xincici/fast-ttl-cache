@@ -29,10 +29,10 @@ describe('FastTTLCache', () => {
     test('设置缓存值 + 覆盖已存在 key', () => {
       const cache = new FastTTLCache();
       cache.put('key', 'value');
-      expect(cache.getToken('key')).toEqual('value');
+      expect(cache.get('key')).toEqual('value');
 
       cache.put('key', 'newValue');
-      expect(cache.getToken('key')).toEqual('newValue');
+      expect(cache.get('key')).toEqual('newValue');
     });
 
     test('验证 head tail 指向', () => {
@@ -65,17 +65,17 @@ describe('FastTTLCache', () => {
       expect(cache.head?.key).toEqual('key2');
       expect(cache.tail?.key).toEqual('key3');
       expect(cache.size).toEqual(2);
-      expect(cache.getToken('key1')).toEqual(null);
+      expect(cache.get('key1')).toEqual(null);
     });
 
   });
 
-  describe('getToken', () => {
+  describe('get', () => {
     test('获取缓存值', () => {
       const cache = new FastTTLCache();
       cache.put('key', 'value');
-      expect(cache.getToken('key')).toEqual('value');
-      expect(cache.getToken('keyNotExists')).toEqual(null);
+      expect(cache.get('key')).toEqual('value');
+      expect(cache.get('keyNotExists')).toEqual(null);
     });
 
     test('缓存过期被删除', async () => {
@@ -86,12 +86,12 @@ describe('FastTTLCache', () => {
 
       // 等待50ms，缓存不应该过期
       await new Promise(resolve => setTimeout(resolve, 50));
-      expect(cache.getToken('key')).toEqual('value');
+      expect(cache.get('key')).toEqual('value');
       expect(cache.size).toEqual(1);
 
       // 再等待70ms，总共120ms，缓存应该过期
       await new Promise(resolve => setTimeout(resolve, 70));
-      expect(cache.getToken('key')).toEqual(null);
+      expect(cache.get('key')).toEqual(null);
       expect(cache.size).toEqual(0);
     });
     
@@ -104,8 +104,8 @@ describe('FastTTLCache', () => {
       cache.put('key2', 'value2');
       cache.put('key3', 'value3');
 
-      expect(cache.getToken('key1')).toEqual(null);
-      expect(cache.getToken('key3')).toEqual('value3');
+      expect(cache.get('key1')).toEqual(null);
+      expect(cache.get('key3')).toEqual('value3');
       expect(cache.size).toEqual(2);
     });
 

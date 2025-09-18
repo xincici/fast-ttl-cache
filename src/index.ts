@@ -57,7 +57,7 @@ export default class FastTTLCache {
    * @param key 缓存键
    * @returns 如果缓存存在且未过期返回值，否则返回null
    */
-  getToken (key: string): any | null {
+  get (key: string): any | null {
     const item = this.store.get(key);
     if (!item) return null;
     // 检查缓存是否过期，过期则删除
