@@ -1,5 +1,5 @@
 
-import FastTTLCache from './src/index.mjs';
+import FastTTLCache from './dist/index.mjs';
 
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
