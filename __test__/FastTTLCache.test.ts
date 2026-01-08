@@ -1,5 +1,7 @@
 
-import FastTTLCache from '../src/index.js';
+import FastTTLCache from '../src/index';
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('FastTTLCache', () => {
 
@@ -80,18 +82,32 @@ describe('FastTTLCache', () => {
 
     test('缓存过期被删除', async () => {
       const cache = new FastTTLCache({
-        ttl: 100,
+        ttl: 80,
       });
       cache.put('key', 'value');
+      cache.put('key1', 'value1');
+      cache.put('key2', 'value2');
+      cache.put('key3', 'value3');
 
       // 等待50ms，缓存不应该过期
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await sleep(30);
       expect(cache.get('key')).toEqual('value');
-      expect(cache.size).toEqual(1);
+      expect(cache.head?.key).toEqual('key');
+      expect(cache.tail?.key).toEqual('key3');
+      expect(cache.size).toEqual(4);
 
       // 再等待70ms，总共120ms，缓存应该过期
-      await new Promise(resolve => setTimeout(resolve, 70));
-      expect(cache.get('key')).toEqual(null);
+      await sleep(60);
+      expect(cache.size).toEqual(4);
+      // 获取 key1 的时候包括 key1 及之前的 key 会被全部删除
+      expect(cache.get('key1')).toEqual(null);
+      expect(cache.head?.key).toEqual('key2');
+      expect(cache.tail?.key).toEqual('key3');
+      expect(cache.size).toEqual(2);
+      // 获取 key3 的时候包括 key3 及之前的 key 会被全部删除
+      expect(cache.get('key3')).toEqual(null);
+      expect(cache.head).toEqual(null);
+      expect(cache.tail).toEqual(null);
       expect(cache.size).toEqual(0);
     });
     

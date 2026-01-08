@@ -16,15 +16,15 @@ export default class FastTTLCache {
   /** 存储缓存项的Map */
   private store: Map<string, CacheItem> = new Map();
   /** 链表头部指针，指向最久未更新的节点 */
-  public head: CacheItem | null = null;
+  public head: CacheItem = null;
   /** 链表尾部指针，指向最新更新的节点 */
-  public tail: CacheItem | null = null;
+  public tail: CacheItem = null;
   /** 缓存大小 */
   public size: number = 0;
 
   /**
    * 构造函数
-   * @param options 配置选项，包含ttl(过期时间)和capacity(容量)
+   * @param {CacheOptions} options 配置选项，包含ttl(过期时间)和capacity(容量)
    */
   constructor (options: CacheOptions = {}) {
     this.ttl = options.ttl || Infinity;
@@ -54,15 +54,15 @@ export default class FastTTLCache {
 
   /**
    * 获取缓存，惰性删除
-   * @param key 缓存键
+   * @param {string} key 缓存键
    * @returns 如果缓存存在且未过期返回值，否则返回null
    */
-  get (key: string): any | null {
+  get (key: string): any {
     const item = this.store.get(key);
     if (!item) return null;
     // 检查缓存是否过期，过期则删除
     if (Date.now() - item.time > this.ttl) {
-      this.del(item);
+      this.del(item, true);
       return null;
     }
     return item.value;
@@ -70,24 +70,10 @@ export default class FastTTLCache {
 
   /**
    * 设置缓存，包含已存在或新增
-   * @param key 缓存键
-   * @param value 缓存值
+   * @param {string} key 缓存键
+   * @param {any} value 缓存值
    */
   put (key: string, value: any): void {
-    // 缓存为空时的处理
-    if (this.size === 0) {
-      const item = {
-        key,
-        value,
-        prev: null,
-        next: null,
-        time: Date.now(),
-      };
-      this.head = this.tail = item;
-      this.store.set(key, item);
-      return;
-    }
-
     // 数据已存在时的处理
     if (this.store.has(key)) {
       // 更新节点的值和时间戳
@@ -108,8 +94,12 @@ export default class FastTTLCache {
       next: null,
       time: Date.now(),
     };
-    this.tail.next = item;
-    this.tail = item;
+    if (this.size === 0) {
+      this.head = this.tail = item;
+    } else {
+      this.tail.next = item;
+      this.tail = item;
+    }
     this.store.set(key, item);
 
     // 超出容量时，删除最久未更新的节点（头部节点）
@@ -120,17 +110,32 @@ export default class FastTTLCache {
 
   /**
    * 移除节点
-   * @param item CacheItem
+   * @param {CacheItem} item
+   * @param {boolean} [isExpire = false] 是否为过期删除
+   * @returns {boolean} 是否删除成功
    */
-  private del (item: CacheItem): boolean {
+  private del (item: CacheItem, isExpire = false): boolean {
     const key = item.key;
     if (!this.store.has(key)) return false;
-    // 获取当前节点
-    if (this.size === 1) { // 只有一个节点的情况
-      this.head = this.tail = null;
-    } else if (this.head === item) { // 处理头部节点的情况
-      this.head = item.next;
-      this.head.prev = null;
+
+    // 如果是过期删除，则当前元素之前的全部都是过期的，可以递归全部删除
+    if (isExpire) {
+      let prevItem = item.prev;
+      while (prevItem) {
+        this.store.delete(prevItem.key);
+        prevItem = prevItem.prev;
+      }
+      // 删除完成之后，把 head 指向当前节点
+      this.head = item;
+    }
+
+    if (this.head === item) { // 处理头部节点的情况
+      if (item.next) {
+        this.head = item.next;
+        this.head.prev = null;
+      } else {
+        this.head = this.tail = null;
+      }
     } else if (this.tail === item) { // 处理尾部节点的情况
       this.tail = item.prev;
       this.tail.next = null;
@@ -139,13 +144,13 @@ export default class FastTTLCache {
       item.next.prev = item.prev;
     }
     // 从 store 里删除节点
-    this.store.delete(key);
-    return true;
+    return this.store.delete(key);
   }
 
   /**
    * 将节点移动到队尾，队尾的节点一定是最后一个更新的
-   * @param item CacheItem
+   * @param {CacheItem} item
+   * @returns void
    */
   private moveToTail (item: CacheItem): void {
     const key = item.key;
