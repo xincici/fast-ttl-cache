@@ -23,4 +23,6 @@ export interface CacheOptions {
   ttl?: number;
   /** 缓存最大容量 */
   capacity?: number;
+  /** 数据 clone 等级，0表示不克隆，1表示浅克隆，2表示深克隆 */
+  cloneLevel?: number;
 }

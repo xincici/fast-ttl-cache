@@ -20,17 +20,21 @@ import FastTTLCache from 'fast-ttl-cache';
 const cache = new FastTTLCache({
   ttl: 5 * 1000, // ttl in millseconds, get an outdated data will return null and delete it
   capacity: 1000, // max capacity, When the capacity is exceeded, the least recently updated data will be removed.
+  cloneLevel: 0, // 0 (no clone), 1 (shallow clone), 2 (deep clone), defaults to 0
 });
 
 cache.put('key1', 'value1');
 cache.put('key2', 'value2');
-cache.get('key2'); // return value2
+cache.put('key3', 'value3');
+console.log(cache.get('key2')); // return value2
 
 // wait for 5 seconds
-cache.get('key1'); // return null and key1 will be removed
-cache.size; // return 1, key2 is outdated but is not been removed yet
+await new Promise(resolve => setTimeout(resolve, 5000));
 
-cache.get('key2'); // return null and key2 will be removed
+cache.get('key1'); // return null and key1 will be removed
+cache.size; // return 2, key2 & key3 are outdated but are not been removed yet
+
+cache.get('key3'); // return null and key2 & key3 will be removed
 cache.size; // return 0
 ```
 
@@ -39,6 +43,7 @@ cache.size; // return 0
 
 - ```options.ttl```: number of millseconds, defaults to Infinity
 - ```options.capacity```: number of max capacity, defaults to Infinity
+- ```options.cloneLevel```: number of clone level, defaults to 0 (no clone), 1 (shallow clone), 2 (deep clone)
 
 ```FastTTLCache.prototype.put(key, value)```
 
@@ -47,6 +52,9 @@ cache.size; // return 0
 ```FastTTLCache.prototype.get(key)```
 
 - Get the value of the key from cache, return null if the key is not exists or has been expired.
+- if cloneLevel is 0, return the original data
+- if cloneLevel is 1, return the shallow cloned data
+- if cloneLevel is 2, return the deep cloned data
 
 ```FastTTLCache.prototype.size```
 

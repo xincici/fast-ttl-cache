@@ -4,6 +4,20 @@ import {
   CacheOptions,
 } from './types.js';
 
+import cloneDeep from 'lodash.clonedeep';
+import clone from 'lodash.clone';
+
+// 默认不克隆数据，直接返回原始数据
+const pure = i => i;
+
+const NO_CLONE = 0;
+const SHALLOW_CLONE = 1;
+const DEEP_CLONE = 2;
+
+function getCloneMethod(cloneLevel = NO_CLONE) {
+  return cloneLevel === DEEP_CLONE ? cloneDeep : cloneLevel === SHALLOW_CLONE ? clone : pure;
+}
+
 /**
  * FastTTLCache 缓存类
  * @brief 不使用 timer 实现的支持 ttl 和 capacity 的缓存类，惰性删除
@@ -21,6 +35,8 @@ export default class FastTTLCache {
   public tail: CacheItem = null;
   /** 缓存大小 */
   public size: number = 0;
+  /** 数据 clone 方法 */
+  private cloneMethod: Function = pure;
 
   /**
    * 构造函数
@@ -29,6 +45,7 @@ export default class FastTTLCache {
   constructor (options: CacheOptions = {}) {
     this.ttl = options.ttl || Infinity;
     this.capacity = options.capacity || Infinity;
+    this.cloneMethod = getCloneMethod(options.cloneLevel);
     Object.defineProperties(this, {
       size: {
         get() {
@@ -65,7 +82,7 @@ export default class FastTTLCache {
       this.del(item, true);
       return null;
     }
-    return item.value;
+    return this.cloneMethod(item.value);
   }
 
   /**

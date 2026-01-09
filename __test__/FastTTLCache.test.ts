@@ -80,6 +80,44 @@ describe('FastTTLCache', () => {
       expect(cache.get('keyNotExists')).toEqual(null);
     });
 
+    test('no clone', () => {
+      const cache = new FastTTLCache({
+        cloneLevel: 0,
+      });
+      const str = 'value';
+      const obj = { a: { b : 1 } };
+      cache.put('str', str);
+      cache.put('obj', obj);
+      expect(cache.get('str')).toBe(str);
+      expect(cache.get('obj')).toBe(obj);
+    });
+
+    test('shallow clone', () => {
+      const cache = new FastTTLCache({
+        cloneLevel: 1,
+      });
+      const str = 'value';
+      const obj = { a: { b : 1 } };
+      cache.put('str', str);
+      cache.put('obj', obj);
+      expect(cache.get('str')).toBe(str);
+      expect(cache.get('obj')).not.toBe(obj);
+      expect(cache.get('obj').a).toBe(obj.a);
+    });
+
+    test('deep clone', () => {
+      const cache = new FastTTLCache({
+        cloneLevel: 2,
+      });
+      const str = 'value';
+      const obj = { a: { b : 1 } };
+      cache.put('str', str);
+      cache.put('obj', obj);
+      expect(cache.get('str')).toBe(str);
+      expect(cache.get('obj')).not.toBe(obj);
+      expect(cache.get('obj').a).not.toBe(obj.a);
+    });
+
     test('缓存过期被删除', async () => {
       const cache = new FastTTLCache({
         ttl: 80,
@@ -89,14 +127,14 @@ describe('FastTTLCache', () => {
       cache.put('key2', 'value2');
       cache.put('key3', 'value3');
 
-      // 等待50ms，缓存不应该过期
+      // 等待30ms，缓存不应该过期
       await sleep(30);
       expect(cache.get('key')).toEqual('value');
       expect(cache.head?.key).toEqual('key');
       expect(cache.tail?.key).toEqual('key3');
       expect(cache.size).toEqual(4);
 
-      // 再等待70ms，总共120ms，缓存应该过期
+      // 再等待60ms，总共90ms，缓存应该过期
       await sleep(60);
       expect(cache.size).toEqual(4);
       // 获取 key1 的时候包括 key1 及之前的 key 会被全部删除
