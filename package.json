@@ -1,6 +1,6 @@
 {
   "name": "fast-ttl-cache",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "ttl cache with capacity support use no timer",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
