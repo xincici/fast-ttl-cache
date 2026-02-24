@@ -2,7 +2,7 @@
 import {
   CacheItem,
   CacheOptions,
-} from './types.js';
+} from './types';
 
 import cloneDeep from 'lodash.clonedeep';
 import clone from 'lodash.clone';
@@ -34,7 +34,7 @@ export default class FastTTLCache {
   /** 链表尾部指针，指向最新更新的节点 */
   public tail: CacheItem = null;
   /** 缓存大小 */
-  public size: number = 0;
+  public size: 0;
   /** 数据 clone 方法 */
   private cloneMethod: Function = pure;
 
